@@ -3,7 +3,7 @@ package com.mylstech.product.dto.response;
 import com.mylstech.product.model.Plan;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
+
 
 @Getter
 @Setter
@@ -22,7 +22,7 @@ public class PlanResponse {
         this.imageUrl = plan.getImageUrl ();
         this.title = plan.getTitle ();
         this.description = plan.getDescription ();
-        this.pricing = plan.getPricing ();
+        this.pricing = plan.getPricing ( ).doubleValue ( );
         this.status = plan.getStatus ();
         this.duration = plan.getDuration ();
         this.planType = plan.getPlanType ();
