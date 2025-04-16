@@ -1,10 +1,13 @@
 package com.mylstech.product.dto.response;
 
+import com.mylstech.product.model.Highlight;
 import com.mylstech.product.model.Service;
 import com.mylstech.product.util.ServiceType;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -20,7 +23,7 @@ public class ServiceResponse {
     private String longDescription2;
 
     // Highlights as a Map (title -> description)
-    private Map<String, String> highlights = new HashMap<> ( );
+    private List<Highlight> highlights = new ArrayList<> ( );
 
 
     public ServiceResponse(Service service) {
@@ -39,7 +42,7 @@ public class ServiceResponse {
         // Map highlights from the embedded map
         if ( service.getHighlightsEmbedded ( ) != null && ! service.getHighlightsEmbedded ( ).isEmpty ( ) ) {
             // Direct map copy
-            this.highlights.putAll ( service.getHighlightsEmbedded ( ) );
+            this.highlights.addAll ( service.getHighlightsEmbedded ( ) );
         }
     }
 

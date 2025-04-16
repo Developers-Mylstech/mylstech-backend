@@ -1,12 +1,13 @@
 package com.mylstech.product.dto.request;
 
 import com.mylstech.product.model.Description;
+import com.mylstech.product.model.Highlight;
 import com.mylstech.product.model.Service;
 import com.mylstech.product.util.ServiceType;
 import lombok.Data;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class ServiceRequest {
@@ -20,8 +21,7 @@ public class ServiceRequest {
     private String longDescription2;
 
     // Highlights as a Map (title -> description)
-    private Map<String, String> highlights = new HashMap<> ( );
-
+    private List<HighlightRequest> highlights = new ArrayList<> ( );
 
     /**
      * Convert this request to a Service entity
@@ -39,10 +39,8 @@ public class ServiceRequest {
         service.setDescription ( description );
         // Set highlights from the map
         if ( this.highlights != null && ! this.highlights.isEmpty ( ) ) {
-            service.getHighlightsEmbedded ( ).putAll ( this.highlights );
+            service.getHighlightsEmbedded ( ).addAll ( this.highlights.stream ( ).map ( Highlight::new ).toList ( ) );
         }
-
-
         return service;
     }
 
