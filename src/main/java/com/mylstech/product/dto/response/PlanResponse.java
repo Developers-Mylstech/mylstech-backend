@@ -1,8 +1,12 @@
 package com.mylstech.product.dto.response;
 
 import com.mylstech.product.model.Plan;
+import com.mylstech.product.util.PlanType;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Getter
