@@ -28,43 +28,12 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Apply to all endpoints
-                        .allowedOrigins("*") // Allow all origins
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH") // Allow common HTTP methods
-                        .allowedHeaders("*") // Allow all headers
-                        .allowCredentials(false) // Don't allow credentials with wildcard origins
-                        .maxAge(3600); // Cache preflight requests for 1 hour
+                registry.addMapping("/**")
+                        .allowedOrigins("https://2jx688rdxcnx.share.zrok.io", "http://localhost:5173","http://javatest.mylstech.com:8080") // <-- replace with your real zrok URL
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // Only if you’re using cookies/auth headers
             }
         };
-    }
-
-    /**
-     * Alternative CORS configuration using CorsFilter
-     * This provides more fine-grained control and works with Spring Security if added later
-     */
-    @Bean
-    public CorsFilter corsFilter() {
-        CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOriginPatterns(Collections.singletonList("*")); // Allow all origins with pattern
-        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        corsConfig.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers",
-                "X-XSRF-TOKEN"));
-        corsConfig.setExposedHeaders(Arrays.asList(
-                "Access-Control-Allow-Origin",
-                "Access-Control-Allow-Credentials"));
-        corsConfig.setMaxAge(3600L);
-        corsConfig.setAllowCredentials(false); // Don't allow credentials with wildcard origins
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
-
-        return new CorsFilter(source);
     }
 }
