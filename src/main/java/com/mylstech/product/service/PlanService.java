@@ -9,4 +9,6 @@ public interface PlanService {
     PlanResponse addPlan(PlanRequest request);
 
     List<PlanResponse> getPlan();
+
+    PlanResponse updatePlan(Long planId, PlanRequest request);
 }
