@@ -21,8 +21,12 @@ public class Cart {
     @Column(nullable = false)
     private Integer userId;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id")
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "cart_plan", // Join table name
+            joinColumns = @JoinColumn(name = "cart_id"), // Cart's foreign key
+            inverseJoinColumns = @JoinColumn(name = "plan_id") // Plan's foreign key
+    )
     private Set<Plan> plans = new HashSet<>();
 
     @Column(name = "created_at")
