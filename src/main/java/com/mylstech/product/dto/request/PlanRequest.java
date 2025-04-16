@@ -24,7 +24,6 @@ public class PlanRequest {
         plan.setStatus ( request.status );
         plan.setDuration ( request.duration );
         plan.setPlanType ( request.planType );
-
         return plan;
     }
 

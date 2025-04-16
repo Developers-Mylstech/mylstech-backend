@@ -31,14 +31,12 @@ public class ServiceRequest {
         service.setServiceType ( this.serviceType );
         service.setTitle ( this.title );
         service.setImageUrl ( this.imageUrl );
-
         // Set description
         Description description = new Description ( );
         description.setShortDescription ( this.shortDescription );
         description.setLongDescription1 ( this.longDescription1 );
         description.setLongDescription2 ( this.longDescription2 );
         service.setDescription ( description );
-
         // Set highlights from the map
         if ( this.highlights != null && ! this.highlights.isEmpty ( ) ) {
             service.getHighlightsEmbedded ( ).putAll ( this.highlights );
