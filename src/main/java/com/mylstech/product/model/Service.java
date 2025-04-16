@@ -4,13 +4,9 @@ import com.mylstech.product.util.ServiceType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Entity
 @Data
@@ -40,55 +36,38 @@ public class Service {
      */
     @ElementCollection
     @CollectionTable(
-        name = "service_highlights",
-        joinColumns = @JoinColumn(name = "service_id")
+            name = "service_highlights",
+            joinColumns = @JoinColumn(name = "service_id")
     )
-    @MapKeyColumn(name = "title")
-    @Column(name = "description")
-    private Map<String, String> highlightsEmbedded = new HashMap<>();
+    private List<Highlight> highlightsEmbedded = new ArrayList<> ( );
 
-//
-    /**
-     * Add a highlight to the service
-     * @param title The highlight title (key)
-     * @param description The highlight description (value)
-     */
     public void addHighlight(String title, String description) {
-        this.highlightsEmbedded.put(title, description);
+        if ( title == null || description == null ) {
+            throw new IllegalArgumentException ( "Title and description cannot be null" );
+        }
+        Highlight highlight = new Highlight ( );
+        highlight.setTitle ( title );
+        highlight.setDescription ( description );
+        this.highlightsEmbedded.add ( highlight );
     }
 
-    /**
-     * Get a highlight description by title
-     * @param title The highlight title (key)
-     * @return The highlight description or null if not found
-     */
-    public String getHighlightDescription(String title) {
-        return this.highlightsEmbedded.get(title);
-    }
-
-    /**
-     * Remove a highlight by title
-     * @param title The highlight title (key)
-     * @return The removed description or null if not found
-     */
-    public String removeHighlight(String title) {
-        return this.highlightsEmbedded.remove(title);
-    }
-
-    /**
-     * Check if a highlight with the given title exists
-     * @param title The highlight title (key)
-     * @return true if the highlight exists, false otherwise
-     */
     public boolean hasHighlight(String title) {
-        return this.highlightsEmbedded.containsKey(title);
+        return this.highlightsEmbedded.stream ( )
+                .anyMatch ( h -> h.getTitle ( ).equalsIgnoreCase ( title ) );
     }
 
-    /**
-     * Get the number of highlights
-     * @return The number of highlights
-     */
-    public int getHighlightCount() {
-        return this.highlightsEmbedded.size();
+    public boolean removeHighlight(String title) {
+        return this.highlightsEmbedded.removeIf ( h -> h.getTitle ( ).equalsIgnoreCase ( title ) );
+    }
+
+    public void setHighlights(List<Highlight> highlights) {
+        if ( highlights == null ) {
+            throw new IllegalArgumentException ( "Highlights list cannot be null" );
+        }
+        this.highlightsEmbedded = new ArrayList<> ( highlights );
+    }
+
+    public void clearHighlights() {
+        this.highlightsEmbedded.clear ( );
     }
 }
