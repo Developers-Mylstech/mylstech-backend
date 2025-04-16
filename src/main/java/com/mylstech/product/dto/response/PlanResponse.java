@@ -15,7 +15,8 @@ public class PlanResponse {
     private Double pricing;
     private Boolean status;
     private Integer duration;
-    private String planType;
+    private PlanType planType;
+    private List<String> highlights = new ArrayList<> ( );
 
     public PlanResponse(Plan plan) {
         this.planId = plan.getPlanId ();
@@ -26,5 +27,9 @@ public class PlanResponse {
         this.status = plan.getStatus ();
         this.duration = plan.getDuration ();
         this.planType = plan.getPlanType ();
+        if ( plan.getHighlightsEmbedded ( ) != null && ! plan.getHighlightsEmbedded ( ).isEmpty ( ) ) {
+            // Direct list copy
+            this.highlights.addAll ( plan.getHighlightsEmbedded ( ) );
+        }
     }
 }
