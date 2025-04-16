@@ -1,11 +1,16 @@
 package com.mylstech.product.model;
 
+import com.mylstech.product.util.PlanType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.EqualsAndHashCode;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -17,7 +22,7 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planId;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "title", nullable = false)
     private String title;
 
     @Column(length = 1000)
@@ -36,7 +41,8 @@ public class Plan {
     private Integer duration;
 
     @Column(name = "plan_type", nullable = false, length = 50)
-    private String planType;
+    @Enumerated(EnumType.STRING)
+    private PlanType planType;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -44,6 +50,50 @@ public class Plan {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @ManyToMany(mappedBy = "plans")
+    private Set<Cart> carts = new HashSet<> ();
+
+    @ElementCollection
+    @CollectionTable(
+            name = "plan_highlights",
+            joinColumns = @JoinColumn(name = "plan_id")
+    )
+    @Column(name = "highlight")
+    private List<String> highlightsEmbedded = new ArrayList<> ();
+
+    /**
+     * Add a highlight to the plan
+     * @param highlight The highlight text
+     */
+    public void addHighlight(String highlight) {
+        this.highlightsEmbedded.add(highlight);
+    }
+
+    /**
+     * Remove a highlight
+     * @param highlight The highlight to remove
+     * @return true if the highlight was removed, false otherwise
+     */
+    public boolean removeHighlight(String highlight) {
+        return this.highlightsEmbedded.remove(highlight);
+    }
+
+    /**
+     * Check if a highlight exists
+     * @param highlight The highlight to check
+     * @return true if the highlight exists, false otherwise
+     */
+    public boolean hasHighlight(String highlight) {
+        return this.highlightsEmbedded.contains(highlight);
+    }
+
+    /**
+     * Get the number of highlights
+     * @return The number of highlights
+     */
+    public int getHighlightCount() {
+        return this.highlightsEmbedded.size();
+    }
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
