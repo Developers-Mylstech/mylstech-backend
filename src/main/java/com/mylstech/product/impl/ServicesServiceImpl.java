@@ -2,112 +2,113 @@ package com.mylstech.product.impl;
 
 import com.mylstech.product.dto.request.ServiceRequest;
 import com.mylstech.product.dto.response.ServiceResponse;
-import com.mylstech.product.model.Description;
-import com.mylstech.product.model.Highlight;
+import com.mylstech.product.exception.DuplicateEntryException;
+import com.mylstech.product.exception.ResourceNotFoundException;
+import com.mylstech.product.mapper.ServiceMapper;
+import com.mylstech.product.repository.ImageRepository;
 import com.mylstech.product.repository.ServiceRepository;
+import com.mylstech.product.service.ImageService;
 import com.mylstech.product.service.ServicesService;
 import com.mylstech.product.util.ServiceType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ServicesServiceImpl implements ServicesService {
     private final ServiceRepository serviceRepository;
-
+    private final ServiceMapper serviceMapper;
+    private final ImageRepository imageRepository;
+    private final ImageService imageService;
 
     @Override
     public ServiceResponse addService(ServiceRequest serviceRequest) {
-        com.mylstech.product.model.Service save = serviceRepository.save ( serviceRequest.toService ( ) );
-        return new ServiceResponse ( save );
+        try {
+            com.mylstech.product.model.Service service = serviceMapper.toEntity ( serviceRequest );
+            if ( serviceRequest.getImageId ( ) != null ) {
+                service.setImage ( imageRepository.findById ( serviceRequest.getImageId ( ) )
+                        .orElseThrow ( () -> new ResourceNotFoundException ( "image", "imageId", serviceRequest.getImageId ( ) ) ) );
+            }
+            com.mylstech.product.model.Service savedService = serviceRepository.save ( service );
+            return serviceMapper.toDto ( savedService );
+        }
+        catch ( DataIntegrityViolationException ex ) {
+            if ( ex.getMessage ( ).contains ( "Duplicate entry" ) ) {
+                throw new DuplicateEntryException ( "Service", "unique constraint for image" );
+            }
+            throw ex;
+        }
     }
 
     @Override
     public List<ServiceResponse> getAllServices() {
         List<com.mylstech.product.model.Service> all = serviceRepository.findAll ( );
-        return all.stream ( ).map ( ServiceResponse::new ).toList ( );
+        return all.stream ( ).map ( serviceMapper::toDto ).toList ( );
     }
 
     @Override
     public List<ServiceResponse> getByServiceType(ServiceType serviceType) {
         List<com.mylstech.product.model.Service> all = serviceRepository.findByServiceType ( serviceType );
-        return all.stream ( ).map ( ServiceResponse::new ).toList ( );
-
+        return all.stream ( ).map ( serviceMapper::toDto ).toList ( );
     }
 
     @Override
     public ServiceResponse updateService(Long serviceId, ServiceRequest serviceRequest) {
-        com.mylstech.product.model.Service existingService = serviceRepository.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Service not found with id: " + serviceId));
+        com.mylstech.product.model.Service existingService = serviceRepository.findById ( serviceId )
+                .orElseThrow ( () -> new ResourceNotFoundException ( "Service not found with id: " + serviceId ) );
 
-        // Update basic fields
-        if (serviceRequest.getServiceType() != null) {
-            existingService.setServiceType(serviceRequest.getServiceType());
-        }
-        if (serviceRequest.getTitle() != null) {
-            existingService.setTitle(serviceRequest.getTitle());
-        }
-        if (serviceRequest.getImageUrl() != null) {
-            existingService.setImageUrl(serviceRequest.getImageUrl());
+        // Update the entity using the mapper
+        com.mylstech.product.model.Service updatedService = serviceMapper.updateEntityFromDto ( existingService, serviceRequest );
+        if ( serviceRequest.getImageId ( ) != null ) {
+            updatedService.setImage ( imageRepository.findById ( serviceRequest.getImageId ( ) )
+                    .orElseThrow ( () -> new ResourceNotFoundException ( "service", "image", serviceRequest.getImageId ( ) ) ) );
         }
 
-        // Update description
-        updateDescription(existingService, serviceRequest);
-
-        // Update highlights
-        updateHighlights(existingService, serviceRequest);
-
-        com.mylstech.product.model.Service updatedService = serviceRepository.save(existingService);
-        return new ServiceResponse(updatedService);
+        // Save and return the updated service
+        com.mylstech.product.model.Service savedService = serviceRepository.save ( updatedService );
+        return serviceMapper.toDto ( savedService );
     }
 
     @Override
     public void deleteService(Long serviceId) {
-        if (!serviceRepository.existsById(serviceId)) {
-            throw new RuntimeException("Service not found with id: " + serviceId);
+        if ( ! serviceRepository.existsById ( serviceId ) ) {
+            throw new ResourceNotFoundException ( "Service not found with id: " + serviceId );
         }
-        serviceRepository.deleteById(serviceId);
+
+        // Delete the service's image first
+        deleteServiceImage ( serviceId );
+
+        // Then delete the service
+        serviceRepository.deleteById ( serviceId );
     }
 
-    private void updateDescription(com.mylstech.product.model.Service service, ServiceRequest request) {
-        if (request.getShortDescription() != null || 
-            request.getLongDescription1() != null || 
-            request.getLongDescription2() != null) {
-            
-            if (service.getDescription() == null) {
-                service.setDescription(new Description());
-            }
-            
-            Description desc = service.getDescription();
-            if (request.getShortDescription() != null) {
-                desc.setShortDescription(request.getShortDescription());
-            }
-            if (request.getLongDescription1() != null) {
-                desc.setLongDescription1(request.getLongDescription1());
-            }
-            if (request.getLongDescription2() != null) {
-                desc.setLongDescription2(request.getLongDescription2());
-            }
-        }
-    }
+    @Override
+    public ServiceResponse deleteServiceImage(Long serviceId) {
+        com.mylstech.product.model.Service service = serviceRepository.findById ( serviceId )
+                .orElseThrow ( () -> new ResourceNotFoundException ( "Service not found with id: " + serviceId ) );
 
-    private void updateHighlights(com.mylstech.product.model.Service service, ServiceRequest request) {
-        if (request.getHighlights() != null) {
-            if (request.getHighlights().isEmpty()) {
-                service.clearHighlights();
-            } else {
-                List<Highlight> newHighlights = request.getHighlights().stream()
-                    .map(hr -> {
-                        Highlight h = new Highlight();
-                        h.setTitle(hr.getTitle());
-                        h.setDescription(hr.getDescription());
-                        return h;
-                    })
-                    .toList();
-                service.setHighlights(newHighlights);
-            }
+        // Store the image ID before removing the association
+        Long imageId = null;
+        if ( service.getImage ( ) != null ) {
+            imageId = service.getImage ( ).getImageId ( );
         }
+
+        // Remove the image association
+        service.setImage ( null );
+
+        // Save the updated service
+        com.mylstech.product.model.Service savedService = serviceRepository.save ( service );
+
+        // Delete the image if it exists
+        if ( imageId != null ) {
+            imageService.deleteImage ( imageId );
+        }
+
+        return serviceMapper.toDto ( savedService );
     }
 }

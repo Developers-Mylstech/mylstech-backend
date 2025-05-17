@@ -18,38 +18,46 @@ public class ServiceController {
 
     @PostMapping("/addService")
     public ResponseEntity<ServiceResponse> addService(@RequestBody ServiceRequest serviceRequest) {
-        return ResponseEntity.ok(serviceService.addService(serviceRequest));
+        return ResponseEntity.ok ( serviceService.addService ( serviceRequest ) );
 
     }
 
     @GetMapping("/getServices")
     public ResponseEntity<List<ServiceResponse>> getServices() {
-        return ResponseEntity.ok(serviceService.getAllServices());
+        return ResponseEntity.ok ( serviceService.getAllServices ( ) );
     }
 
 
     @GetMapping("/getFeaturedServices")
     public ResponseEntity<List<ServiceResponse>> getFeaturedServices() {
-        return ResponseEntity.ok(serviceService.getByServiceType ( ServiceType.FEATURED));
+        return ResponseEntity.ok ( serviceService.getByServiceType ( ServiceType.FEATURED ) );
     }
+
     @GetMapping("/getSoftwareServices")
     public ResponseEntity<List<ServiceResponse>> getSoftwareServices() {
-        return ResponseEntity.ok(serviceService.getByServiceType ( ServiceType.SOFTWARE));
+        return ResponseEntity.ok ( serviceService.getByServiceType ( ServiceType.SOFTWARE ) );
     }
 
     @GetMapping("/getOtherServices")
     public ResponseEntity<List<ServiceResponse>> getOtherServices() {
-        return ResponseEntity.ok(serviceService.getByServiceType ( ServiceType.OTHER));
+        return ResponseEntity.ok ( serviceService.getByServiceType ( ServiceType.OTHER ) );
     }
+
     //update
     @PutMapping("/updateService/{serviceId}")
     public ResponseEntity<ServiceResponse> updateService(@PathVariable Long serviceId, @RequestBody ServiceRequest serviceRequest) {
-        return ResponseEntity.ok(serviceService.updateService(serviceId, serviceRequest));
+        return ResponseEntity.ok ( serviceService.updateService ( serviceId, serviceRequest ) );
     }
+
     //delete
     @DeleteMapping("/deleteService/{serviceId}")
     public ResponseEntity<Void> deleteService(@PathVariable Long serviceId) {
-        serviceService.deleteService(serviceId);
-        return ResponseEntity.noContent().build();
+        serviceService.deleteService ( serviceId );
+        return ResponseEntity.noContent ( ).build ( );
+    }
+
+    @DeleteMapping("/deleteServiceImage/{serviceId}")
+    public ResponseEntity<ServiceResponse> deleteServiceImage(@PathVariable Long serviceId) {
+        return ResponseEntity.ok ( serviceService.deleteServiceImage ( serviceId ) );
     }
 }

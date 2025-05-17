@@ -10,8 +10,12 @@ public interface ServicesService {
     ServiceResponse addService(ServiceRequest serviceRequest);
 
     List<ServiceResponse> getAllServices();
+
     List<ServiceResponse> getByServiceType(ServiceType serviceType);
+
     ServiceResponse updateService(Long serviceId, ServiceRequest serviceRequest);
 
     void deleteService(Long serviceId);
+
+    ServiceResponse deleteServiceImage(Long serviceId);
 }

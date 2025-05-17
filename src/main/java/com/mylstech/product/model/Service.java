@@ -2,16 +2,15 @@ package com.mylstech.product.model;
 
 import com.mylstech.product.util.ServiceType;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "services")
 @EqualsAndHashCode(of = "serviceId")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Service {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,50 +23,18 @@ public class Service {
     @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(name = "image_url", length = 512)
-    private String imageUrl;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "image_id")
+    private ImageEntity image;
 
-    @Embedded
-    private Description description;
+    @Column(length = 500)
+    private String description;
 
-    /**
-     * Collection of embedded highlights as a Map of title -> description
-     * This replaces the previous one-to-many relationship with Highlight entity
-     */
-    @ElementCollection
-    @CollectionTable(
-            name = "service_highlights",
-            joinColumns = @JoinColumn(name = "service_id")
-    )
-    private List<Highlight> highlightsEmbedded = new ArrayList<> ( );
+    @Column(length = 700)
+    private String longDescription1;
 
-    public void addHighlight(String title, String description) {
-        if ( title == null || description == null ) {
-            throw new IllegalArgumentException ( "Title and description cannot be null" );
-        }
-        Highlight highlight = new Highlight ( );
-        highlight.setTitle ( title );
-        highlight.setDescription ( description );
-        this.highlightsEmbedded.add ( highlight );
-    }
+    @Column(length = 700)
+    private String longDescription2;
 
-    public boolean hasHighlight(String title) {
-        return this.highlightsEmbedded.stream ( )
-                .anyMatch ( h -> h.getTitle ( ).equalsIgnoreCase ( title ) );
-    }
-
-    public boolean removeHighlight(String title) {
-        return this.highlightsEmbedded.removeIf ( h -> h.getTitle ( ).equalsIgnoreCase ( title ) );
-    }
-
-    public void setHighlights(List<Highlight> highlights) {
-        if ( highlights == null ) {
-            throw new IllegalArgumentException ( "Highlights list cannot be null" );
-        }
-        this.highlightsEmbedded = new ArrayList<> ( highlights );
-    }
-
-    public void clearHighlights() {
-        this.highlightsEmbedded.clear ( );
-    }
 }
+

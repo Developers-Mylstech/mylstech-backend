@@ -13,7 +13,6 @@ import java.util.List;
 @Setter
 public class PlanResponse {
     private Long planId;
-    private String imageUrl;
     private String title;
     private String description;
     private Double pricing;
@@ -22,15 +21,18 @@ public class PlanResponse {
     private PlanType planType;
     private List<String> highlights = new ArrayList<> ( );
 
+    public PlanResponse() {
+        // Default constructor for mapper
+    }
+
     public PlanResponse(Plan plan) {
-        this.planId = plan.getPlanId ();
-        this.imageUrl = plan.getImageUrl ();
-        this.title = plan.getTitle ();
-        this.description = plan.getDescription ();
+        this.planId = plan.getPlanId ( );
+        this.title = plan.getTitle ( );
+        this.description = plan.getDescription ( );
         this.pricing = plan.getPricing ( ).doubleValue ( );
-        this.status = plan.getStatus ();
-        this.duration = plan.getDuration ();
-        this.planType = plan.getPlanType ();
+        this.status = plan.getStatus ( );
+        this.duration = plan.getDuration ( );
+        this.planType = plan.getPlanType ( );
         if ( plan.getHighlightsEmbedded ( ) != null && ! plan.getHighlightsEmbedded ( ).isEmpty ( ) ) {
             // Direct list copy
             this.highlights.addAll ( plan.getHighlightsEmbedded ( ) );

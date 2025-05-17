@@ -11,8 +11,12 @@ import java.util.List;
 public interface ServiceRepository extends JpaRepository<Service, Long> {
     /**
      * Find all services by service type
+     *
      * @param serviceType The service type to filter by
      * @return List of services with the specified service type
      */
     List<Service> findByServiceType(ServiceType serviceType);
+
+    // Add this method to check if an image is used by any service
+    boolean existsByImageImageUrl(String imageUrl);
 }

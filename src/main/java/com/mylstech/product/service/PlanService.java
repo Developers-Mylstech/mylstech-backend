@@ -11,4 +11,6 @@ public interface PlanService {
     List<PlanResponse> getPlan();
 
     PlanResponse updatePlan(Long planId, PlanRequest request);
+
+    void deletePlan(Long planId);
 }

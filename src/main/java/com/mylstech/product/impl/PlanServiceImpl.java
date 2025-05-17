@@ -2,62 +2,54 @@ package com.mylstech.product.impl;
 
 import com.mylstech.product.dto.request.PlanRequest;
 import com.mylstech.product.dto.response.PlanResponse;
+import com.mylstech.product.exception.ResourceNotFoundException;
+import com.mylstech.product.mapper.PlanMapper;
 import com.mylstech.product.model.Plan;
+import com.mylstech.product.repository.ImageRepository;
 import com.mylstech.product.repository.PlanRepository;
 import com.mylstech.product.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PlanServiceImpl implements PlanService {
     private final PlanRepository planRepository;
+    private final PlanMapper planMapper;
+    private final ImageRepository imageRepository;
 
     @Override
     public PlanResponse addPlan(PlanRequest request) {
-        Plan save = planRepository.save ( request.toPlan (request ) );
-        return new PlanResponse ( save );
+        Plan plan = planMapper.toEntity ( request );
+        plan.setImage ( imageRepository.findById ( request.getImageId ( ) ).orElseThrow ( () -> new ResourceNotFoundException ( "Image not found" ) ) );
+        Plan savedPlan = planRepository.save ( plan );
+        return planMapper.toDto ( savedPlan );
     }
 
     @Override
     public List<PlanResponse> getPlan() {
-        return planRepository.findAll ().stream ().map ( PlanResponse::new ).toList ();
+        return planRepository.findAll ( ).stream ( ).map ( planMapper::toDto ).toList ( );
     }
 
     @Override
     public PlanResponse updatePlan(Long planId, PlanRequest request) {
         Plan existingPlan = planRepository.findById ( planId ).orElseThrow ( () -> new RuntimeException ( "plan not found" ) );
-        if(request.getTitle () != null) {
-            existingPlan.setTitle ( request.getTitle () );
-        }
-        if (request.getDescription() != null) {
-            existingPlan.setDescription(request.getDescription());
-        }
-        if(request.getImageUrl () != null) {
-            existingPlan.setImageUrl ( request.getImageUrl () );
-        }
-        if (request.getPricing() != null) {
-            existingPlan.setPricing( BigDecimal.valueOf(request.getPricing()));
-        }
-        if (request.getStatus() != null) {
-            existingPlan.setStatus(request.getStatus());
-        }
-        if (request.getDuration() != null) {
-            existingPlan.setDuration(request.getDuration());
-        }
-        if (request.getPlanType() != null) {
-            existingPlan.setPlanType(request.getPlanType());
-        }
-        if (request.getHighlights() != null) {
-            existingPlan.getHighlightsEmbedded().addAll(request.getHighlights());
 
-        }
+        // Update the entity using the mapper
+        Plan updatedPlan = planMapper.updateEntityFromDto ( existingPlan, request );
 
-        Plan updatedPlan = planRepository.save(existingPlan);
-        return new PlanResponse(updatedPlan);
+        // Save and return the updated plan
+        Plan savedPlan = planRepository.save ( updatedPlan );
+        return planMapper.toDto ( savedPlan );
+    }
+
+    @Override
+    public void deletePlan(Long planId) {
+        if ( planRepository.existsById ( planId ) ) {
+            planRepository.deleteById ( planId );
+        }
     }
 
 
