@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 @Slf4j
 public class OtpServiceImpl implements OtpService {
+
     private final Map<String, Map.Entry<String, LocalDateTime>> otpStorage = new ConcurrentHashMap<> ( );
     private final EmailService emailService;
     @Value("${otp.expiry.minutes}")
@@ -27,11 +28,12 @@ public class OtpServiceImpl implements OtpService {
         otpStorage.remove ( email );
 
         String otp = generateSecureOtp ( );
-        log.info ( "---------------> otp is here {}", otp );
+
         LocalDateTime expiryTime = LocalDateTime.now ( ).plusMinutes ( otpExpiryMinutes );
 
         // Store OTP with expiry time
         otpStorage.put ( email, new AbstractMap.SimpleEntry<> ( otp, expiryTime ) );
+        log.info ( otpStorage.toString ( ) );
         // Send OTP via email
         sendOtpViaEmail ( email, otp );
 
@@ -53,23 +55,22 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public boolean verifyOtp(String email, String otp) {
-        Map.Entry<String, LocalDateTime> storedOtpEntry = otpStorage.get ( email );
+       Map.Entry<String, LocalDateTime> storedOtpEntry = otpStorage.get ( email );
 
         if ( storedOtpEntry == null ) {
             return false;
         }
-
         String storedOtp = storedOtpEntry.getKey ( );
         LocalDateTime expiryTime = storedOtpEntry.getValue ( );
-
         // Check if OTP is valid and not expired
         boolean isValid = storedOtp.equals ( otp ) && LocalDateTime.now ( ).isBefore ( expiryTime );
-
+        // Log the validation result
+        log.info ( "OTP validation result: {}", isValid );
         // Remove OTP after successful verification
         if ( isValid ) {
             otpStorage.remove ( email );
+            log.info ( "OTP removed from storage after successful verification" );
         }
-
         return isValid;
     }
 

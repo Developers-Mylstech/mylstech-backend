@@ -6,10 +6,7 @@ import com.mylstech.product.exception.ResourceInUseException;
 import com.mylstech.product.exception.ResourceNotFoundException;
 import com.mylstech.product.mapper.ImageMapper;
 import com.mylstech.product.model.ImageEntity;
-import com.mylstech.product.repository.BannerRepository;
-import com.mylstech.product.repository.ImageRepository;
-import com.mylstech.product.repository.PlanRepository;
-import com.mylstech.product.repository.ServiceRepository;
+import com.mylstech.product.repository.*;
 import com.mylstech.product.service.FileStorageService;
 import com.mylstech.product.service.ImageService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +33,7 @@ public class ImageServiceImpl implements ImageService {
     private final ServiceRepository serviceRepository;
     private final PlanRepository planRepository;
     private final BannerRepository bannerRepository;
+    private final ClientRepository clientRepository;
 
     @Override
     public ImageResponse uploadImage(MultipartFile file) {
@@ -85,12 +83,17 @@ public class ImageServiceImpl implements ImageService {
         // Check if the image is associated with any Banner entities
         boolean isUsedByBanner = checkImageUsedByBanner ( imageEntity.getImageUrl ( ) );
 
-        if ( isUsedByService || isUsedByPlan || isUsedByBanner ) {
+        // Check if the image is associated with any Client entities
+        boolean isUsedByClient = checkImageUsedByClient ( imageEntity.getImageUrl ( ) );
+
+        if ( isUsedByService || isUsedByPlan || isUsedByBanner || isUsedByClient ) {
             String usedBy = (isUsedByService ? "Service" : "") +
-                    (isUsedByService && (isUsedByPlan || isUsedByBanner) ? ", " : "") +
+                    (isUsedByService && (isUsedByPlan || isUsedByBanner || isUsedByClient) ? ", " : "") +
                     (isUsedByPlan ? "Plan" : "") +
-                    ((isUsedByService || isUsedByPlan) && isUsedByBanner ? ", " : "") +
-                    (isUsedByBanner ? "Banner" : "");
+                    ((isUsedByService || isUsedByPlan) && (isUsedByBanner || isUsedByClient) ? ", " : "") +
+                    (isUsedByBanner ? "Banner" : "") +
+                    ((isUsedByService || isUsedByPlan || isUsedByBanner) && isUsedByClient ? ", " : "") +
+                    (isUsedByClient ? "Client" : "");
             throw new ResourceInUseException ( "Image", usedBy );
         }
 
@@ -149,5 +152,9 @@ public class ImageServiceImpl implements ImageService {
 
     private boolean checkImageUsedByBanner(String imageUrl) {
         return bannerRepository.existsByImageImageUrl ( imageUrl );
+    }
+
+    private boolean checkImageUsedByClient(String imageUrl) {
+        return clientRepository.existsByImageImageUrl ( imageUrl );
     }
 }

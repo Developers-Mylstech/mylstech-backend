@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -41,6 +42,7 @@ public class SecurityConfig {
                 .exceptionHandling ( exception -> exception.authenticationEntryPoint ( jwtAuthenticationEntryPoint ) )
                 .sessionManagement ( session -> session.sessionCreationPolicy ( SessionCreationPolicy.STATELESS ) )
                 .authorizeHttpRequests ( auth -> auth
+                        .requestMatchers ( HttpMethod.GET,"/api/v1/banners/**","/api/v1/clients/**","/api/v1/services/**" ).permitAll ( )
                         .requestMatchers ( "/api/v1/auth/**" ).permitAll ( )
                         .requestMatchers ( "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/upload.html" ).permitAll ( )
                         .requestMatchers ( "/uploads/images/**" ).permitAll ( )

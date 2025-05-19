@@ -21,18 +21,18 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendEmail(String to, String subject, String body) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage ( );
-            message.setFrom ( fromEmail );
-            message.setTo ( to );
-            message.setSubject ( subject );
-            message.setText ( body );
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(body);
 
-            mailSender.send ( message );
-            log.info ( "Email sent successfully to: {}", to );
+            mailSender.send(message);
+            log.info("Email sent successfully to: {}", to);
         }
-        catch ( Exception e ) {
-            log.error ( "Failed to send email to: {}", to, e );
-            throw new EmailSendException ( "Failed to send email", e );
+        catch (Exception e) {
+            log.error("Failed to send email to: {}", to, e);
+            throw new EmailSendException("Failed to send email to " + to, e);
         }
     }
 }

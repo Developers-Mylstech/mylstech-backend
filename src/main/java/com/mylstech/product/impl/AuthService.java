@@ -15,6 +15,7 @@ import com.mylstech.product.model.User;
 import com.mylstech.product.repository.UserRepository;
 import com.mylstech.product.security.JwtTokenUtil;
 import com.mylstech.product.security.UserSecurityDetails;
+import com.mylstech.product.service.CustomerService;
 import com.mylstech.product.service.OtpService;
 import com.mylstech.product.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class AuthService {
     private final UserMapper userMapper;
     private final OtpService otpService;
     private final RefreshTokenService refreshTokenService;
+    private final CustomerService customerService;
 
     @Transactional
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
@@ -80,27 +82,30 @@ public class AuthService {
 
     @Transactional
     public JwtResponse verifyUser(EmailVerificationRequest request) {
-        if ( ! otpService.verifyOtp ( request.getEmail ( ), request.getOtp ( ) ) ) {
-            throw new OtpInvalidException ( "Otp not match try again" );
+        if (!otpService.verifyOtp(request.getEmail(), request.getOtp())) {
+            throw new OtpInvalidException("Otp not match try again");
         }
 
-        User user = userRepository.findByEmail ( request.getEmail ( ) )
-                .orElseThrow ( () -> new UsernameNotFoundException ( "User not found" ) );
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        user.setVerified ( true );
-        userRepository.save ( user );
+        user.setVerified(true);
+        userRepository.save(user);
 
-        UserDetails details = new UserSecurityDetails ( user );
-        String jwt = jwtTokenUtil.generateToken ( details );
+        // Create a customer for the user
+        customerService.createCustomer(user);
+
+        UserDetails details = new UserSecurityDetails(user);
+        String jwt = jwtTokenUtil.generateToken(details);
 
         // Create refresh token
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken ( user.getUserId ( ) );
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUserId());
 
-        return JwtResponse.builder ( )
-                .accessToken ( jwt )
-                .refreshToken ( refreshToken.getToken ( ) )
-                .tokenType ( BEARER )
-                .build ( );
+        return JwtResponse.builder()
+                .accessToken(jwt)
+                .refreshToken(refreshToken.getToken())
+                .tokenType(BEARER)
+                .build();
     }
 
     public String sendOtp(String email) {
