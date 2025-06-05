@@ -12,8 +12,8 @@ public class PlanRequest {
     private String title;
     private String description;
     private Double pricing;
-    private Boolean status;
-    private Integer duration;
+    private Boolean isActive;
+    private Integer trailDuration;
     private PlanType planType;
-    private List<String> highlights = new ArrayList<> ( );
+    private List<String> highlights = new ArrayList<>();
 }

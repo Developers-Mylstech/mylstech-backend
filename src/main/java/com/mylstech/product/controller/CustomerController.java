@@ -75,14 +75,14 @@ public class CustomerController {
         return ResponseEntity.ok ( customerService.updateCustomer ( customerId, request ) );
     }
 
-    @PutMapping("/user/{userId}")
-    @PreAuthorize("hasRole('ADMIN') or @securityService.isCurrentUser(#userId)")
-    @Operation(summary = "Update a customer by user ID", description = "Updates a customer by its user ID and returns the updated customer details")
-    public ResponseEntity<CustomerResponse> updateCustomerByUserId(
-            @PathVariable Long userId,
-            @Valid @RequestBody CustomerRequest request) {
-        return ResponseEntity.ok ( customerService.updateCustomerByUserId ( userId, request ) );
-    }
+//    @PutMapping("/user/{userId}")
+//    @PreAuthorize("hasRole('ADMIN') or @securityService.isCurrentUser(#userId)")
+//    @Operation(summary = "Update a customer by user ID", description = "Updates a customer by its user ID and returns the updated customer details")
+//    public ResponseEntity<CustomerResponse> updateCustomerByUserId(
+//            @PathVariable Long userId,
+//            @Valid @RequestBody CustomerRequest request) {
+//        return ResponseEntity.ok ( customerService.updateCustomerByUserId ( userId, request ) );
+//    }
 
     @DeleteMapping("/{customerId}")
     @PreAuthorize("hasRole('ADMIN')")

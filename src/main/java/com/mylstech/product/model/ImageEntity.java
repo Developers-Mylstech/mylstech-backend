@@ -6,34 +6,32 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "images")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Table(name = "images")
 public class ImageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long imageId;
-
-    @Column(nullable = false, length = 512)
-    private String imageUrl;
-
-    @Column(nullable = false, length = 255)
-    private String originalFilename;
-
-    @Column(length = 100)
-    private String contentType;
-
+    
     @Column(nullable = false)
+    private String imageUrl;
+    
+    @Column(nullable = false)
+    private String originalFilename;
+    
+    private String contentType;
+    
     private Long fileSize;
-
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now ( );
+        createdAt = LocalDateTime.now();
     }
 }

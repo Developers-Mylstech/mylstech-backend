@@ -4,9 +4,9 @@ import com.mylstech.product.dto.request.PlanRequest;
 import com.mylstech.product.dto.response.PlanResponse;
 import com.mylstech.product.mapper.PlanMapper;
 import com.mylstech.product.model.Plan;
+import com.mylstech.product.util.PlanType;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 /**
@@ -34,16 +34,13 @@ public class PlanMapperImpl implements PlanMapper {
 
         plan.setTitle ( planRequest.getTitle ( ) != null ? planRequest.getTitle ( ) : "title" );
         plan.setDescription ( planRequest.getDescription ( ) != null ? planRequest.getDescription ( ) : "" );
-        plan.setPricing ( planRequest.getPricing ( ) != null ? BigDecimal.valueOf ( planRequest.getPricing ( ) ) : BigDecimal.ZERO );
-        plan.setStatus ( planRequest.getStatus ( ) != null && planRequest.getStatus ( ) );
-        plan.setDuration ( planRequest.getDuration ( ) != null ? planRequest.getDuration ( ) : 0 );
-        plan.setPlanType ( planRequest.getPlanType ( ) != null ? planRequest.getPlanType ( ) : com.mylstech.product.util.PlanType.MONTHLY );
+        plan.setPricing ( planRequest.getPricing ( ) != null ? planRequest.getPricing ( ) : 0.0 );
+        plan.setIsActive ( planRequest.getIsActive ( ) != null && planRequest.getIsActive ( ) );
+        plan.setTrailDuration ( planRequest.getTrailDuration ( ) != null ? planRequest.getTrailDuration ( ) : 0 );
+        plan.setPlanType ( planRequest.getPlanType ( ) != null ? planRequest.getPlanType ( ) : PlanType.MONTHLY );
 
         if ( planRequest.getHighlights ( ) != null && ! planRequest.getHighlights ( ).isEmpty ( ) ) {
-            if ( plan.getHighlightsEmbedded ( ) == null ) {
-                plan.setHighlightsEmbedded ( new ArrayList<> ( ) );
-            }
-            plan.getHighlightsEmbedded ( ).addAll ( planRequest.getHighlights ( ) );
+            plan.setHighlights ( new ArrayList<>( planRequest.getHighlights ( ) ) );
         }
 
         return plan;
@@ -63,28 +60,29 @@ public class PlanMapperImpl implements PlanMapper {
             plan.setDescription ( planRequest.getDescription ( ) );
         }
 
-
         if ( planRequest.getPricing ( ) != null ) {
-            plan.setPricing ( BigDecimal.valueOf ( planRequest.getPricing ( ) ) );
+            plan.setPricing ( planRequest.getPricing ( ) );
         }
 
-        if ( planRequest.getStatus ( ) != null ) {
-            plan.setStatus ( planRequest.getStatus ( ) );
+        if ( planRequest.getIsActive ( ) != null ) {
+            plan.setIsActive ( planRequest.getIsActive ( ) );
         }
 
-        if ( planRequest.getDuration ( ) != null ) {
-            plan.setDuration ( planRequest.getDuration ( ) );
+        if ( planRequest.getTrailDuration ( ) != null ) {
+            plan.setTrailDuration ( planRequest.getTrailDuration ( ) );
         }
 
         if ( planRequest.getPlanType ( ) != null ) {
             plan.setPlanType ( planRequest.getPlanType ( ) );
         }
 
-        if ( planRequest.getHighlights ( ) != null && ! planRequest.getHighlights ( ).isEmpty ( ) ) {
-            if ( plan.getHighlightsEmbedded ( ) == null ) {
-                plan.setHighlightsEmbedded ( new ArrayList<> ( ) );
+        if ( planRequest.getHighlights ( ) != null ) {
+            // Clear existing highlights and add new ones
+            plan.getHighlights ( ).clear ( );
+            
+            if ( ! planRequest.getHighlights ( ).isEmpty ( ) ) {
+                plan.getHighlights ( ).addAll ( planRequest.getHighlights ( ) );
             }
-            plan.getHighlightsEmbedded ( ).addAll ( planRequest.getHighlights ( ) );
         }
 
         return plan;

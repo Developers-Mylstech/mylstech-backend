@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +30,13 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    public static final String API_V_1_BANNERS = "/api/v1/banners/**";
+    public static final String API_V_1_CLIENTS = "/api/v1/clients/**";
+    public static final String API_V_1_SERVICES = "/api/v1/services/**";
+    public static final String API_V_1_IMAGES = "/api/v1/images/**";
+    public static final String API_V_1_CONTACT= "/api/v1/contact/**";
+    public static final String API_V_1_PLANS= "/api/v1/plans/**";
+    public static final String ADMIN = "ADMIN";
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Value("${zrok.url}")
@@ -38,11 +46,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors ( cors -> cors.configurationSource ( corsConfigurationSource ( ) ) )
-                .csrf ( csrf -> csrf.disable ( ) )
+                .csrf ( AbstractHttpConfigurer::disable )
                 .exceptionHandling ( exception -> exception.authenticationEntryPoint ( jwtAuthenticationEntryPoint ) )
                 .sessionManagement ( session -> session.sessionCreationPolicy ( SessionCreationPolicy.STATELESS ) )
                 .authorizeHttpRequests ( auth -> auth
-                        .requestMatchers ( HttpMethod.GET,"/api/v1/banners/**","/api/v1/clients/**","/api/v1/services/**" ).permitAll ( )
+                        .requestMatchers ( HttpMethod.GET,
+                                API_V_1_BANNERS,API_V_1_CLIENTS, API_V_1_SERVICES
+                                ,API_V_1_IMAGES,API_V_1_CONTACT,API_V_1_PLANS ).permitAll ( )
+                        .requestMatchers ( HttpMethod.POST,
+                                API_V_1_BANNERS, API_V_1_CLIENTS, API_V_1_SERVICES
+                                ,API_V_1_IMAGES,API_V_1_PLANS ).hasRole ( ADMIN )
+                        .requestMatchers ( HttpMethod.PUT,
+                                API_V_1_BANNERS, API_V_1_CLIENTS, API_V_1_SERVICES,
+                                API_V_1_CONTACT ,API_V_1_PLANS).hasRole ( ADMIN )
+                        .requestMatchers ( HttpMethod.DELETE,
+                                API_V_1_BANNERS, API_V_1_CLIENTS, API_V_1_SERVICES,
+                                API_V_1_IMAGES,API_V_1_PLANS ).hasRole ( ADMIN )
                         .requestMatchers ( "/api/v1/auth/**" ).permitAll ( )
                         .requestMatchers ( "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/upload.html" ).permitAll ( )
                         .requestMatchers ( "/uploads/images/**" ).permitAll ( )
